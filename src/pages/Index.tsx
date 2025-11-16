@@ -16,8 +16,12 @@ import plcLogo from "@/assets/plc-logo.png";
 
 const Index = () => {
   const [deviceMac, setDeviceMac] = useState("");
-  const [configuredMac, setConfiguredMac] = useState("");
-  const [isConfigured, setIsConfigured] = useState(false);
+  const [configuredMac, setConfiguredMac] = useState(() => {
+    return localStorage.getItem("esp32_device_mac") || "";
+  });
+  const [isConfigured, setIsConfigured] = useState(() => {
+    return !!localStorage.getItem("esp32_device_mac");
+  });
   const [showConfig, setShowConfig] = useState(false);
 
   const { connected, status, controlRelay } = useMqttClient({
@@ -29,8 +33,11 @@ const Index = () => {
 
   const handleConnect = () => {
     if (deviceMac.trim()) {
-      setConfiguredMac(deviceMac.trim());
+      const mac = deviceMac.trim();
+      setConfiguredMac(mac);
       setIsConfigured(true);
+      localStorage.setItem("esp32_device_mac", mac);
+      toast.success("Dispositivo salvo localmente!");
     }
   };
 
@@ -144,6 +151,8 @@ const Index = () => {
                   setIsConfigured(false);
                   setDeviceMac("");
                   setConfiguredMac("");
+                  localStorage.removeItem("esp32_device_mac");
+                  toast.success("Dispositivo removido!");
                 }}
               >
                 Trocar Dispositivo
