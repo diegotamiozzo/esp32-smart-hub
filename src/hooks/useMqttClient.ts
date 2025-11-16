@@ -13,14 +13,14 @@ interface UseMqttClientProps {
   brokerUrl?: string;
 }
 
-export const useMqttClient = ({ deviceMac, brokerUrl = "wss://broker.hivemq.com:8884/mqtt" }: UseMqttClientProps) => {
+export const useMqttClient = ({ deviceMac, brokerUrl = import.meta.env.VITE_MQTT_BROKER_URL }: UseMqttClientProps) => {
   const [connected, setConnected] = useState(false);
   const [status, setStatus] = useState<PlcStatus>({
     digital_in: Array(8).fill(0),
     analog_in: Array(4).fill(0),
     relays_out: Array(8).fill(0),
   });
-  
+
   const clientRef = useRef<MqttClient | null>(null);
   const topicStatus = `plc/status/${deviceMac}`;
   const topicControl = `plc/control/${deviceMac}`;
@@ -30,6 +30,8 @@ export const useMqttClient = ({ deviceMac, brokerUrl = "wss://broker.hivemq.com:
       clientId: `web-client-${Math.random().toString(16).substring(2, 8)}`,
       clean: true,
       reconnectPeriod: 5000,
+      username: import.meta.env.VITE_MQTT_USERNAME,
+      password: import.meta.env.VITE_MQTT_PASSWORD,
     });
 
     client.on("connect", () => {
