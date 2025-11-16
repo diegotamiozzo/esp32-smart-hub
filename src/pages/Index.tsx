@@ -12,6 +12,7 @@ import { useMqttClient } from "@/hooks/useMqttClient";
 import { useDeviceConfig } from "@/hooks/useDeviceConfig";
 import { Activity, Settings } from "lucide-react";
 import { toast } from "sonner";
+import plcLogo from "@/assets/plc-logo.png";
 
 const Index = () => {
   const [deviceMac, setDeviceMac] = useState("");
@@ -55,9 +56,7 @@ const Index = () => {
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Activity className="h-6 w-6 text-primary" />
-            </div>
+            <img src={plcLogo} alt="ESP32 PLC Logo" className="h-12 w-12 object-contain" />
             <div>
               <h1 className="text-3xl font-bold">ESP32 PLC Dashboard</h1>
               <p className="text-sm text-muted-foreground">
@@ -72,7 +71,7 @@ const Index = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleOpenConfig}
-                  className="gap-2"
+                  className="gap-2 bg-neon-green/20 text-neon-green border-neon-green/30 hover:bg-neon-green/30"
                 >
                   <Settings className="h-4 w-4" />
                   Configurar I/O
