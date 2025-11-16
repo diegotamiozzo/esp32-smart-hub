@@ -51,6 +51,7 @@ export default {
         warning: "hsl(var(--warning))",
         active: "hsl(var(--active))",
         inactive: "hsl(var(--inactive))",
+        "neon-green": "hsl(var(--neon-green))",
       },
       borderRadius: {
         lg: "var(--radius)",
