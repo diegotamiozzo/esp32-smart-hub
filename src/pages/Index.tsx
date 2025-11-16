@@ -71,7 +71,7 @@ const Index = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleOpenConfig}
-                  className="gap-2 bg-neon-green/20 text-neon-green border-neon-green/30 hover:bg-neon-green/30"
+                  className="gap-2"
                 >
                   <Settings className="h-4 w-4" />
                   Configurar I/O
