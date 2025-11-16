@@ -77,7 +77,11 @@ const Index = () => {
                   <Settings className="h-4 w-4" />
                   Configurar I/O
                 </Button>
-                <ConnectionStatus connected={connected} deviceMac={configuredMac} />
+                <ConnectionStatus 
+                  mqttConnected={connected} 
+                  deviceConnected={isConfigured && connected}
+                  deviceMac={configuredMac} 
+                />
               </>
             )}
           </div>
