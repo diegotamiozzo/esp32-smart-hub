@@ -22,8 +22,8 @@ export const useMqttClient = ({ deviceMac, brokerUrl = import.meta.env.VITE_MQTT
   });
 
   const clientRef = useRef<MqttClient | null>(null);
-  const topicStatus = `plc/status/${deviceMac}`;
-  const topicControl = `plc/control/${deviceMac}`;
+  const topicStatus = `plc/${deviceMac}/status`;
+  const topicControl = `plc/${deviceMac}/control`;
 
   useEffect(() => {
     const client = mqtt.connect(brokerUrl, {
