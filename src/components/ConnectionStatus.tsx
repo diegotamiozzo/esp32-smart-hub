@@ -5,16 +5,15 @@ interface ConnectionStatusProps {
   mqttConnected: boolean;
   deviceConnected: boolean;
   deviceMac?: string;
-  className?: string;
 }
 
-export const ConnectionStatus = ({ mqttConnected, deviceConnected, deviceMac, className }: ConnectionStatusProps) => {
+export const ConnectionStatus = ({ mqttConnected, deviceConnected, deviceMac }: ConnectionStatusProps) => {
   return (
     <div className="flex items-center gap-3">
       <Badge 
         variant="secondary"
         className={`flex items-center gap-2 px-3 py-1.5 ${
-          mqttConnected ? 'bg-green-500/20 text-green-400 border-green-500/30' : ''
+          mqttConnected ? 'bg-neon-green/20 text-neon-green border-neon-green/30' : ''
         }`}
       >
         {mqttConnected ? (
@@ -33,7 +32,7 @@ export const ConnectionStatus = ({ mqttConnected, deviceConnected, deviceMac, cl
       <Badge 
         variant="secondary"
         className={`flex items-center gap-2 px-3 py-1.5 ${
-          deviceConnected ? className : ''
+          deviceConnected ? 'bg-neon-green/20 text-neon-green border-neon-green/30' : ''
         }`}
       >
         {deviceConnected ? (

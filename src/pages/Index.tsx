@@ -63,7 +63,7 @@ const Index = () => {
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
-            <img src={plcLogo} alt="ESP32 PLC Logo" className="h-16 w-16 object-contain" />
+            <img src={plcLogo} alt="ESP32 PLC Logo" className="h-12 w-12 object-contain" />
             <div>
               <h1 className="text-3xl font-bold">ESP32 PLC Dashboard</h1>
               <p className="text-sm text-muted-foreground">
@@ -83,6 +83,11 @@ const Index = () => {
                   <Settings className="h-4 w-4" />
                   Configurar I/O
                 </Button>
+                <ConnectionStatus 
+                  mqttConnected={connected} 
+                  deviceConnected={isConfigured && connected}
+                  deviceMac={configuredMac} 
+                />
               </>
             )}
           </div>
@@ -99,17 +104,8 @@ const Index = () => {
         ) : !isConfigured ? (
           /* Connection Card */
           <Card className="max-w-xl mx-auto">
-            <CardHeader className="flex-row items-center justify-between">
+            <CardHeader>
               <CardTitle>Conectar ao Dispositivo</CardTitle>
-              <div className="flex items-center gap-3">
-                <ConnectionStatus
-                  mqttConnected={connected}
-                  // O dispositivo só pode estar conectado se estiver configurado e o MQTT também.
-                  deviceConnected={isConfigured && connected}
-                  deviceMac={configuredMac}
-                  className={isConfigured && connected ? "text-green-400 animate-pulse" : ""}
-                />
-              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -133,12 +129,6 @@ const Index = () => {
         ) : (
           /* Dashboard */
           <>
-            <ConnectionStatus
-              mqttConnected={connected}
-              deviceConnected={isConfigured && connected}
-              deviceMac={configuredMac}
-              className={isConfigured && connected ? "text-green-400 animate-pulse" : ""}
-            />
             {/* Relay Controls */}
             <RelayControl
               relays={status.relays_out}
