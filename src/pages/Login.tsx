@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -13,91 +13,86 @@ const Login = ({ onConnect }: LoginProps) => {
   const [deviceMac, setDeviceMac] = useState("");
 
   const handleConnect = () => {
-    if (deviceMac.trim()) {
-      const mac = deviceMac.trim().toUpperCase().replace(/:/g, '');
-      if (mac.length === 12) {
-        onConnect(mac);
-      } else {
-        toast.error("MAC address deve ter 12 caracteres!");
-      }
-    } else {
+    const mac = deviceMac.trim().toUpperCase().replace(/:/g, "");
+
+    if (!mac) {
       toast.error("Digite um MAC address válido!");
+      return;
     }
+
+    if (mac.length !== 12) {
+      toast.error("MAC address deve ter 12 caracteres!");
+      return;
+    }
+
+    onConnect(mac);
   };
 
   return (
-    // CONTAINER PRINCIPAL: relative para conter os elementos absolutos
-    <div className="min-h-screen w-full relative flex items-center justify-center p-4 overflow-hidden bg-slate-900">
-      
-      {/* 1. CAMADA DA IMAGEM DE FUNDO */}
-      <div 
-        className="absolute inset-0 z-0"
-        style={{
-            // Troque '/bg-industria.jpg' pelo caminho da sua imagem de fundo
-            backgroundImage: 'url("/bg-industria.jpg")', 
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-        }}
-      />
+    // Fundo da Página: Slate-950 (Bem escuro/industrial)
+    <div className="min-h-screen w-full relative flex items-center justify-center p-4 overflow-hidden bg-slate-950">
 
-      {/* 2. OVERLAY (MÁSCARA ESCURA) */}
-      {/* Isso garante que o texto fique legível independente da imagem de fundo */}
-      <div className="absolute inset-0 z-0 bg-black/60" />
+      {/* Efeito de Overlay para focar no centro */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900/50 to-slate-950/80" />
 
-      {/* CARD DE LOGIN */}
-      {/* z-10 para ficar acima do fundo, backdrop-blur para efeito de vidro */}
-      <Card className="max-w-md w-full relative z-10 bg-card/95 backdrop-blur-sm shadow-2xl border-white/10">
-        <CardHeader className="space-y-4 text-center">
+      {/* Card Principal */}
+      <Card className="max-w-md w-full relative z-10 bg-slate-50 shadow-2xl border-slate-200">
+        <CardHeader className="text-center space-y-4 pb-2">
           
-          {/* Logo Container */}
-          <div className="mx-auto w-32 h-32 rounded-2xl bg-gray-50 flex items-center justify-center shadow-inner border border-primary/20">
+          {/* LOGO */}
+          <div className="flex justify-center py-2">
             <img
               src="/logo.png"
-              alt="Logo da Empresa"
-              className="w-32 h-32 object-contain drop-shadow-sm"
+              alt="Logo do Sistema"
+              className="h-40 w-auto object-contain drop-shadow-sm"
             />
           </div>
 
-          <div className="space-y-1">
-            <CardTitle className="text-2xl font-bold tracking-tight">
+          <div className="space-y-1.5">
+            <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
               ESP32 PLC Dashboard
             </CardTitle>
-            <CardDescription className="text-sm">
-              Configure o dispositivo para começar o monitoramento
-            </CardDescription>
+            <p className="text-sm text-slate-600">
+              Configure o dispositivo para iniciar
+            </p>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 pt-4">
           <div className="space-y-2">
-            <Label htmlFor="mac">Endereço MAC do Dispositivo</Label>
+            <Label htmlFor="mac" className="text-slate-700 font-medium">
+              Endereço MAC do Dispositivo
+            </Label>
+            
+            {/* Input com fundo Branco para destacar do Card Cinza Claro */}
             <Input
               id="mac"
               placeholder="AABBCCDDEEFF"
               value={deviceMac}
               onChange={(e) => setDeviceMac(e.target.value.toUpperCase())}
-              onKeyPress={(e) => e.key === "Enter" && handleConnect()}
-              className="font-mono text-center text-lg tracking-wider uppercase h-12 border-primary/20 focus-visible:ring-primary/30"
+              onKeyDown={(e) => e.key === "Enter" && handleConnect()}
               maxLength={12}
+              className="bg-white border-slate-300 text-slate-900 font-mono text-center text-lg tracking-widest uppercase h-12 focus-visible:ring-slate-900 placeholder:text-slate-400 shadow-sm"
             />
-            <p className="text-xs text-muted-foreground text-center">
-              Digite o MAC address do ESP32 (12 caracteres hexadecimais)
+            
+            <p className="text-xs text-slate-500 text-center">
+              12 caracteres hexadecimais
             </p>
           </div>
-          
-          <Button 
-            onClick={handleConnect} 
-            className="w-full h-11 text-base font-semibold shadow-lg hover:shadow-primary/25 transition-all" 
+
+          <Button
+            onClick={handleConnect}
+            className="w-full h-12 text-base font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-md transition-all active:scale-[0.98]"
             size="lg"
           >
             Conectar ao Dispositivo
           </Button>
         </CardContent>
       </Card>
-      
-      {/* Rodapé Opcional (Fica bonito em telas de login fullscreen) */}
-      <div className="absolute bottom-4 text-center w-full z-10 text-white/40 text-xs">
-        &copy; {new Date().getFullYear()} Sistema de Automação Industrial
+
+      {/* Rodapé discreto */}
+      <div className="absolute bottom-6 w-full text-center text-xs text-white shadow-md">
+        © {new Date().getFullYear()} Sistema de Automação Industrial
       </div>
     </div>
   );
