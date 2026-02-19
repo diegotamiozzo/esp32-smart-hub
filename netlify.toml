@@ -1,0 +1,7 @@
+[dev]
+  targetPort = 8080
+  command = "npm run dev"
+  framework = "#custom"
+
+[functions]
+  directory = "netlify/functions"

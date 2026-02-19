@@ -1,0 +1,209 @@
+[33mcommit 9dc464f5134c84f00537991e942b571938db1a85[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: diego tamiozzo <dietamiozzo@gmail.com>
+Date:   Mon Jan 5 22:40:19 2026 -0300
+
+    page dashboard
+
+[33mcommit 80670b1293a47e1757af9dcdcdb6f1baf905120d[m
+Author: diego tamiozzo <dietamiozzo@gmail.com>
+Date:   Sun Jan 4 19:29:27 2026 -0300
+
+    ajuste cor page login
+
+[33mcommit de5359225b7d028532f4a7fab0404a44ce81c78a[m
+Author: diego tamiozzo <dietamiozzo@gmail.com>
+Date:   Sun Jan 4 15:39:13 2026 -0300
+
+    ajuste page login
+
+[33mcommit 0acdc235ff081c15cb5fea97f56d216ca8544c3a[m
+Author: diego tamiozzo <dietamiozzo@gmail.com>
+Date:   Sat Jan 3 19:07:55 2026 -0300
+
+    ajuste código esp32
+
+[33mcommit 0bd9036d27fdd78cd9985c181d4a5ff59c1eab54[m
+Author: diego tamiozzo <dietamiozzo@gmail.com>
+Date:   Sun Nov 16 23:34:47 2025 -0300
+
+    ajustes conexao dispositivo
+
+[33mcommit 8b1779d0ac8eef1f832ac98bc4e0f7834115c4ec[m
+Merge: 2a6dce2 29c27ac
+Author: diego tamiozzo <dietamiozzo@gmail.com>
+Date:   Sun Nov 16 22:51:52 2025 -0300
+
+    Merge branch 'main' of https://github.com/diegotamiozzo/esp32-smart-hub
+
+[33mcommit 29c27acd691ce4e3f663ef574a61aa13c1b1b521[m
+Author: diegotamiozzo <138736202+diegotamiozzo@users.noreply.github.com>
+Date:   Sun Nov 16 22:50:46 2025 -0300
+
+    Updated README.md
+
+[33mcommit 2a6dce2b9dd2e0ffaf8ded22b7f2ae752e9a5ab1[m
+Author: diego tamiozzo <dietamiozzo@gmail.com>
+Date:   Sun Nov 16 22:44:25 2025 -0300
+
+    ajustes esp32 placa
+
+[33mcommit cdb856144c6c706fb33916abd9a3df87fa7ebeea[m
+Merge: e43b686 67a3944
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Sun Nov 16 11:15:53 2025 +0000
+
+    Integrate ESP32 code to project
+    
+    Update ESP32 code to align with MQTT-based PLC dashboard:
+    - Use hiveMQ HiveMQ Cloud SSL MQTT settings and credentials
+    - Implement 8 digital inputs, 4 analog inputs, 8 relay outputs
+    - Publish status in JSON with digital_in, analog_in, relays_out arrays
+    - Accept commands in JSON {relay, state} to control relays
+    - Use WIFIManager portal for config and persistent MAC-based topics
+    - Ensure topics follow plc/status/{mac} and plc/control/{mac} conventions
+    - Persist device MAC locally and manage reconnects
+    
+    X-Lovable-Edit-ID: edt-6093ac6c-f466-4e9f-bfad-5f21890b6bd2
+
+[33mcommit 67a3944d22619dda97b09feaf24e2d9dd84db4a0[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Sun Nov 16 11:15:52 2025 +0000
+
+    Changes
+
+[33mcommit e43b686665577a455bc2893b808a998b1d608e84[m
+Author: diegotamiozzo <138736202+diegotamiozzo@users.noreply.github.com>
+Date:   Sat Nov 15 22:45:22 2025 -0300
+
+    Updated useMqttClient.ts
+
+[33mcommit fcaab634576d7a7e62d2116c1587b5426f75d704[m
+Author: diegotamiozzo <138736202+diegotamiozzo@users.noreply.github.com>
+Date:   Sat Nov 15 22:39:37 2025 -0300
+
+    Deleted vite.config.ts.timestamp-1763257175534-de80901f1ddb88.mjs
+
+[33mcommit dbb2c3147cc7fb7c3dcd912fe6b3c443cc1ee0d1[m
+Author: diegotamiozzo <138736202+diegotamiozzo@users.noreply.github.com>
+Date:   Sat Nov 15 22:39:36 2025 -0300
+
+    Added vite.config.ts.timestamp-1763257175534-de80901f1ddb88.mjs
+
+[33mcommit ff77839ea0f55eb12aebee144f50eaa43fa5caf0[m
+Author: diego tamiozzo <dietamiozzo@gmail.com>
+Date:   Sat Nov 15 22:38:35 2025 -0300
+
+    primeiros ajustes
+
+[33mcommit 96dd52d026e503955503632208d8945b41806efc[m
+Merge: 8ff620f 6e7fe5a
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Sun Nov 16 00:58:32 2025 +0000
+
+    Persist MAC locally
+    
+    Saves the ESP32 MAC address to localStorage so the device can be remembered across sessions.
+    - Load MAC from localStorage on startup
+    - Save MAC when user connects
+    - Keep existing device-switch flow with a seamless, remembered device option
+    
+    X-Lovable-Edit-ID: edt-2fe07c25-f68a-466a-a481-0af1a24b3252
+
+[33mcommit 6e7fe5a0bcb52d96810cb0826e137b6f63052ade[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Sun Nov 16 00:58:30 2025 +0000
+
+    Changes
+
+[33mcommit 8ff620f4ecc34abfaa309cf5d82fe577c018f295[m
+Merge: 04befbb de0109e
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Sun Nov 16 00:53:27 2025 +0000
+
+    Revert neon style on IO
+    
+    Revert the Configurar I/O button to its previous appearance (remove neon green styling). Restores the original outline/smaller look for the button while preserving existing functionality.
+    
+    X-Lovable-Edit-ID: edt-f70de1e2-9ece-4be5-8559-dd38091b0f45
+
+[33mcommit de0109eb0bfc5a08b0e4f49e73547a8f9d2a425f[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Sun Nov 16 00:53:27 2025 +0000
+
+    Changes
+
+[33mcommit 04befbb026f782521da6b00e4a71968b169f5e71[m
+Merge: 7a41b6c 7b6a438
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Sun Nov 16 00:51:08 2025 +0000
+
+    Add logo next to title
+    
+    Add industrial logo beside "Acesso ao Sistema" in the header and style interactions (neon green accents for I/O config and MQTT/device indicators). Incorporates updated Index.tsx imports for the logo and keeps UI improvements.
+    
+    X-Lovable-Edit-ID: edt-a6e173e7-c425-43d6-89f2-05990efe6de2
+
+[33mcommit 7b6a438c0a4e83d92644f590617e86f706e3ca1e[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Sun Nov 16 00:51:07 2025 +0000
+
+    Changes
+
+[33mcommit 7a41b6cdbd72d2856d8bd2d0e3b99a43dcd3bbda[m
+Merge: 72cf0f1 4c3d7bb
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Sun Nov 16 00:47:23 2025 +0000
+
+    Add dual MQTT and device status
+    
+    Show separate MQTT and device connectivity statuses with neon-green when connected; extend UI with neon color, and wire connections display beside Connect.
+    
+    X-Lovable-Edit-ID: edt-6026449c-c57d-4a81-8ad5-d5256f21b0eb
+
+[33mcommit 4c3d7bb4d8e9ab4cf96a4eaa169864635cdea50e[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Sun Nov 16 00:47:22 2025 +0000
+
+    Changes
+
+[33mcommit 72cf0f1b213f64381efb328a252e7650d4049408[m
+Merge: e203eed f714086
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Fri Nov 14 20:34:51 2025 +0000
+
+    Add io selection config
+    
+    Introduce configuration system to select which 8 digital inputs, 4 analog inputs, and 8 relay outputs to monitor/control, with per-IO labels, localStorage persistence, and UI filtering of unused I/Os in the dashboard. Includes new ConfigurationPanel, useDeviceConfig, and updated components to respect config.
+    
+    X-Lovable-Edit-ID: edt-476a9a4f-dda0-4731-b0b4-c1e7a8705b9c
+
+[33mcommit f7140865c55e1d95412f8e425e012d409088944c[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Fri Nov 14 20:34:50 2025 +0000
+
+    Changes
+
+[33mcommit e203eed22fe49fb96c00733e60f097421f1da5d1[m
+Merge: 11c2740 84fc1e7
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Fri Nov 14 20:29:14 2025 +0000
+
+    Build Acesso ao Sistema
+    
+    Implement web-based industrial dashboard components for ESP32 PLC:
+    - 8-relay control, 8 digital inputs, 4 analog inputs
+    - MQTT connectivity (HiveMQ) with status/control topics
+    - JSON-based commands for relay control
+    - React UI components for relays, digital/analog inputs and connection status
+    - WiFiManager-based config portal and status publishing every 2s
+    
+    X-Lovable-Edit-ID: edt-b64701ef-d9e7-4082-8b60-910cc795799a
+
+[33mcommit 84fc1e7afeba2bf35624212753b3d73d950ba590[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.github.com>
+Date:   Fri Nov 14 20:29:13 2025 +0000
+
+    Changes
+
+[33mcommit 11c2740f13b29eee7714d97695428707a25591e6[m
+Author: gpt-engineer-app[bot] <159125892+gpt-engineer-app[bot]@users.noreply.gi

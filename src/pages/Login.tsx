@@ -166,13 +166,13 @@ const Login = ({ onConnect }: LoginProps) => {
             <img
               src="/logo.png"
               alt="Logo do Sistema"
-              className="h-28 w-auto object-contain drop-shadow-sm"
+              className="h-48 w-auto object-contain drop-shadow-sm"
             />
           </div>
 
            <div className="space-y-1.5">
             <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
-              ESP32 PLC Dashboard
+              Acesso ao Sistema
             </CardTitle>
             <p className="text-sm text-slate-600">
               Configure o dispositivo para iniciar

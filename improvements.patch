@@ -1,0 +1,418 @@
+diff --git a/.env.example b/.env.example
+new file mode 100644
+index 0000000..87021c1
+--- /dev/null
++++ b/.env.example
+@@ -0,0 +1,4 @@
++# Configurações do Broker MQTT (HiveMQ Cloud recomendado)
++VITE_MQTT_BROKER_URL=wss://seu-broker.s1.eu.hivemq.cloud:8884/mqtt
++VITE_MQTT_USERNAME=seu_usuario
++VITE_MQTT_PASSWORD=sua_senha
+diff --git a/README.md b/README.md
+index 2dd3bbf..8900ea8 100644
+--- a/README.md
++++ b/README.md
+@@ -8,7 +8,7 @@ Sistema completo de monitoramento e controle de PLC baseado em ESP32 com interfa
+ - **4 Entradas Analógicas** (0-10V / 4-20mA)
+ - **8 Saídas de Relé** (250VAC/10A)
+ - **Comunicação MQTT** via HiveMQ Cloud (TLS)
+-- **Interface Web Responsiva** (React + TypeScript)
++- **Interface Web Responsiva** (React + TypeScript) com detecção de status offline
+ - **Configuração WiFi** via WiFiManager
+ 
+ ## 🔧 Hardware Necessário
+@@ -172,15 +172,11 @@ Se aparecer `Falhou (state=-2)`:
+ - Verifique conexão com internet
+ - Confirme credenciais MQTT
+ - Teste se a porta 8883 não está bloqueada
+-
+-### Interface não recebe dados
+-
+-1. Confirme que o **MAC Address** está correto na configuração
+-2. Abra o Console do navegador (F12) e verifique:
+-   - `MQTT Connected` ✅
+-   - `Subscribed to: plc/XXXXXXXXXXXX/status` ✅
+-3. Verifique se o ESP32 está publicando (Serial Monitor)
+-
++### 4. Interface não recebe dados / Dispositivo Offline
++1. O sistema agora detecta automaticamente se o dispositivo parou de enviar dados por mais de 5 segundos.
++2. Verifique se o ESP32 está ligado e conectado ao WiFi.
++3. Confirme que o **MAC Address** está correto.
++4. O Dashboard exibirá um aviso visual e desabilitará os controles se o dispositivo estiver offline.
+ ### Relés não respondem
+ 
+ 1. Verifique se a conexão MQTT está ativa (indicador verde)
+diff --git a/src/hooks/useMqttClient.ts b/src/hooks/useMqttClient.ts
+index 2d0a57c..113216d 100644
+--- a/src/hooks/useMqttClient.ts
++++ b/src/hooks/useMqttClient.ts
+@@ -15,6 +15,7 @@ interface UseMqttClientProps {
+ 
+ export const useMqttClient = ({ deviceMac, brokerUrl = import.meta.env.VITE_MQTT_BROKER_URL }: UseMqttClientProps) => {
+   const [connected, setConnected] = useState(false);
++  const [deviceConnected, setDeviceConnected] = useState(false);
+   const [status, setStatus] = useState<PlcStatus>({
+     digital_in: Array(8).fill(0),
+     analog_in: Array(4).fill(0),
+@@ -22,6 +23,7 @@ export const useMqttClient = ({ deviceMac, brokerUrl = import.meta.env.VITE_MQTT
+   });
+ 
+   const clientRef = useRef<MqttClient | null>(null);
++  const lastMessageTime = useRef<number>(0);
+   const topicStatus = `plc/${deviceMac}/status`;
+   const topicControl = `plc/${deviceMac}/control`;
+ 
+@@ -37,7 +39,6 @@ export const useMqttClient = ({ deviceMac, brokerUrl = import.meta.env.VITE_MQTT
+     client.on("connect", () => {
+       console.log("MQTT Connected");
+       setConnected(true);
+-      toast.success("Connected to MQTT broker");
+       
+       client.subscribe(topicStatus, (err) => {
+         if (err) {
+@@ -54,6 +55,11 @@ export const useMqttClient = ({ deviceMac, brokerUrl = import.meta.env.VITE_MQTT
+         try {
+           const data = JSON.parse(payload.toString()) as PlcStatus;
+           setStatus(data);
++          lastMessageTime.current = Date.now();
++          if (!deviceConnected) {
++            setDeviceConnected(true);
++            toast.success("Dispositivo online");
++          }
+         } catch (error) {
+           console.error("Failed to parse status:", error);
+         }
+@@ -68,16 +74,26 @@ export const useMqttClient = ({ deviceMac, brokerUrl = import.meta.env.VITE_MQTT
+     client.on("close", () => {
+       console.log("MQTT Disconnected");
+       setConnected(false);
++      setDeviceConnected(false);
+     });
+ 
++    // Monitoramento de inatividade do dispositivo
++    const checkInterval = setInterval(() => {
++      if (deviceConnected && Date.now() - lastMessageTime.current > 5000) {
++        setDeviceConnected(false);
++        toast.error("Dispositivo ficou offline (sem resposta)");
++      }
++    }, 2000);
++
+     clientRef.current = client;
+ 
+     return () => {
+       if (clientRef.current) {
+         clientRef.current.end();
+       }
++      clearInterval(checkInterval);
+     };
+-  }, [deviceMac, brokerUrl, topicStatus]);
++  }, [deviceMac, brokerUrl, topicStatus, deviceConnected]);
+ 
+   const controlRelay = (relayIndex: number, state: boolean) => {
+     if (clientRef.current && connected) {
+@@ -99,6 +115,7 @@ export const useMqttClient = ({ deviceMac, brokerUrl = import.meta.env.VITE_MQTT
+ 
+   return {
+     connected,
++    deviceConnected,
+     status,
+     controlRelay,
+   };
+diff --git a/src/pages/Dashboard.tsx b/src/pages/Dashboard.tsx
+index 293a43a..132ae6a 100644
+--- a/src/pages/Dashboard.tsx
++++ b/src/pages/Dashboard.tsx
+@@ -5,7 +5,7 @@ import { DigitalInputs } from "@/components/DigitalInputs";
+ import { AnalogInputs } from "@/components/AnalogInputs";
+ import { useMqttClient } from "@/hooks/useMqttClient";
+ import { useDeviceConfig } from "@/hooks/useDeviceConfig";
+-import { Settings, LogOut, Activity, User, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
++import { LogOut, Activity, User, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
+ 
+ interface DashboardProps {
+   deviceMac: string;
+@@ -14,7 +14,7 @@ interface DashboardProps {
+ }
+ 
+ const Dashboard = ({ deviceMac, onSettings, onLogout }: DashboardProps) => {
+-  const { connected, status, controlRelay } = useMqttClient({ deviceMac });
++  const { connected, deviceConnected, status, controlRelay } = useMqttClient({ deviceMac });
+   const { config } = useDeviceConfig(deviceMac);
+ 
+   // Cálculos de I/Os ativos
+@@ -44,24 +44,22 @@ const Dashboard = ({ deviceMac, onSettings, onLogout }: DashboardProps) => {
+           <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+             <ConnectionStatus 
+               mqttConnected={connected} 
+-              deviceConnected={connected}
++              deviceConnected={deviceConnected}
+               deviceMac={deviceMac} 
+             />
+             
+             <div className="h-8 w-px bg-border mx-1 hidden md:block"></div>
+ 
+             <div className="flex items-center gap-2">
+-               {/* Nome / Identificação do Usuário (Simplificado) */}
+-<Button
+-  variant="outline"
+-  size="sm"
+-  onClick={onSettings}
+-  className="gap-2"
+->
+-  <User className="h-4 w-4" />
+-  <span className="hidden sm:inline">Configurações</span>
+-</Button>
+-
++              <Button
++                variant="outline"
++                size="sm"
++                onClick={onSettings}
++                className="gap-2"
++              >
++                <User className="h-4 w-4" />
++                <span className="hidden sm:inline">Configurações</span>
++              </Button>
+ 
+               <Button
+                 variant="destructive"
+@@ -81,9 +79,9 @@ const Dashboard = ({ deviceMac, onSettings, onLogout }: DashboardProps) => {
+           
+           {/* Card 1: Status MQTT */}
+           <div className="p-4 rounded-lg border border-border bg-card shadow-sm">
+-            <div className="text-sm text-muted-foreground mb-1">Status MQTT</div>
+-            <div className={`text-2xl font-bold ${connected ? "text-green-500" : "text-red-500"}`}>
+-              {connected ? "Conectado" : "Desconectado"}
++            <div className="text-sm text-muted-foreground mb-1">Status do Dispositivo</div>
++            <div className={`text-2xl font-bold ${deviceConnected ? "text-green-500" : "text-red-500"}`}>
++              {deviceConnected ? "Online" : "Offline"}
+             </div>
+           </div>
+ 
+@@ -129,7 +127,7 @@ const Dashboard = ({ deviceMac, onSettings, onLogout }: DashboardProps) => {
+           relays={status.relays_out}
+           config={config.relays}
+           onToggle={controlRelay}
+-          disabled={!connected}
++          disabled={!deviceConnected}
+         />
+ 
+         {/* Digital Inputs */}
+@@ -142,4 +140,4 @@ const Dashboard = ({ deviceMac, onSettings, onLogout }: DashboardProps) => {
+   );
+ };
+ 
+-export default Dashboard;
+\ No newline at end of file
++export default Dashboard;
+diff --git a/src/pages/Login.tsx b/src/pages/Login.tsx
+index 7bcf8ac..d401890 100644
+--- a/src/pages/Login.tsx
++++ b/src/pages/Login.tsx
+@@ -12,7 +12,6 @@ import {
+ import { Input } from "@/components/ui/input";
+ import { Label } from "@/components/ui/label";
+ import { Button } from "@/components/ui/button";
+-import { Separator } from "@/components/ui/separator"; // Certifique-se de ter este componente ou use uma div simples
+ 
+ interface LoginProps {
+   onConnect: (mac: string) => void;
+@@ -23,10 +22,8 @@ const Login = ({ onConnect }: LoginProps) => {
+   const [isValid, setIsValid] = useState<boolean | null>(null);
+   const [testingConnection, setTestingConnection] = useState(false);
+   
+-  // Estado para armazenar os últimos dispositivos
+   const [recentDevices, setRecentDevices] = useState<string[]>([]);
+ 
+-  // Carrega histórico do LocalStorage ao iniciar
+   useEffect(() => {
+     const saved = localStorage.getItem("plc_recent_devices");
+     if (saved) {
+@@ -38,7 +35,6 @@ const Login = ({ onConnect }: LoginProps) => {
+     }
+   }, []);
+ 
+-  // Validação em tempo real do MAC
+   useEffect(() => {
+     if (!deviceMac) {
+       setIsValid(null);
+@@ -56,17 +52,14 @@ const Login = ({ onConnect }: LoginProps) => {
+     setDeviceMac(value);
+   };
+ 
+-  // Função para salvar no histórico
+   const addToHistory = (mac: string) => {
+-    // Remove o mac se já existir (para mover para o topo) e limita a 3 itens
+     const newHistory = [mac, ...recentDevices.filter((d) => d !== mac)].slice(0, 3);
+     setRecentDevices(newHistory);
+     localStorage.setItem("plc_recent_devices", JSON.stringify(newHistory));
+   };
+ 
+-  // Função para remover um item específico do histórico
+   const removeFromHistory = (e: React.MouseEvent, macToDelete: string) => {
+-    e.stopPropagation(); // Evita que o clique no X preencha o input
++    e.stopPropagation();
+     const newHistory = recentDevices.filter((d) => d !== macToDelete);
+     setRecentDevices(newHistory);
+     localStorage.setItem("plc_recent_devices", JSON.stringify(newHistory));
+@@ -76,44 +69,55 @@ const Login = ({ onConnect }: LoginProps) => {
+     mac: string
+   ): Promise<{ success: boolean; deviceOnline: boolean }> => {
+     return new Promise((resolve) => {
+-      // Nota: Em produção, cuidado com credenciais expostas no frontend
+-      const client = mqtt.connect(import.meta.env.VITE_MQTT_BROKER_URL, {
++      const brokerUrl = import.meta.env.VITE_MQTT_BROKER_URL;
++      const username = import.meta.env.VITE_MQTT_USERNAME;
++      const password = import.meta.env.VITE_MQTT_PASSWORD;
++
++      if (!brokerUrl || !username || !password) {
++        console.error("MQTT credentials missing in .env");
++        resolve({ success: false, deviceOnline: false });
++        return;
++      }
++
++      const client = mqtt.connect(brokerUrl, {
+         clientId: `test-${Math.random().toString(16).substring(2, 8)}`,
+         clean: true,
+         connectTimeout: 5000,
+-        username: import.meta.env.VITE_MQTT_USERNAME,
+-        password: import.meta.env.VITE_MQTT_PASSWORD,
++        username: username,
++        password: password,
+       });
+ 
+       let deviceFound = false;
++      const topic = `plc/${mac}/status`;
+ 
+       const timeout = setTimeout(() => {
+         client.end(true);
+         resolve({ success: true, deviceOnline: deviceFound });
+-      }, 5000); // Reduzi para 5s para ser mais ágil, ajuste conforme a latência da rede
++      }, 8000);
+ 
+       client.on("connect", () => {
+-        client.subscribe(`plc/${mac}/status`);
++        console.log("Test connection: Connected to broker");
++        client.subscribe(topic);
+       });
+ 
+-      client.on("message", (topic, payload) => {
+-        if (topic !== `plc/${mac}/status`) return;
+-
+-        try {
+-          const data = JSON.parse(payload.toString());
+-          // Validação básica da estrutura
+-          if (data.digital_in || data.uptime) { // Simplifiquei a validação para teste
+-             deviceFound = true;
+-             clearTimeout(timeout);
+-             client.end(true);
+-             resolve({ success: true, deviceOnline: true });
++      client.on("message", (receivedTopic, payload) => {
++        if (receivedTopic === topic) {
++          try {
++            const data = JSON.parse(payload.toString());
++            if (data.digital_in || data.analog_in || data.relays_out) {
++              deviceFound = true;
++              clearTimeout(timeout);
++              client.end(true);
++              resolve({ success: true, deviceOnline: true });
++            }
++          } catch (e) {
++            console.error("Test connection: Invalid JSON", e);
+           }
+-        } catch {
+-          // Ignora payload inválido
+         }
+       });
+ 
+-      client.on("error", () => {
++      client.on("error", (err) => {
++        console.error("Test connection: MQTT Error", err);
+         clearTimeout(timeout);
+         client.end(true);
+         resolve({ success: false, deviceOnline: false });
+@@ -125,33 +129,30 @@ const Login = ({ onConnect }: LoginProps) => {
+     if (!isValid) return;
+ 
+     setTestingConnection(true);
+-    toast.loading("Conectando ao broker MQTT...", { id: "mqtt-test" });
++    const toastId = toast.loading("Validando dispositivo...");
+ 
+-    const { success, deviceOnline } = await testMqttConnection(deviceMac);
++    try {
++      const { success, deviceOnline } = await testMqttConnection(deviceMac);
+ 
+-    if (!success) {
+-      toast.error("Erro ao conectar ao broker MQTT", { id: "mqtt-test" });
+-      setTestingConnection(false);
+-      return;
+-    }
++      if (!success) {
++        toast.error("Erro ao conectar ao servidor MQTT. Verifique as configurações.", { id: toastId });
++        setTestingConnection(false);
++        return;
++      }
+ 
+-    if (!deviceOnline) {
+-      toast.error(
+-        `Dispositivo ${deviceMac} offline ou sem resposta.`,
+-        { id: "mqtt-test" }
+-      );
++      if (!deviceOnline) {
++        toast.error(`Dispositivo ${deviceMac} não encontrado ou offline.`, { id: toastId });
++        setTestingConnection(false);
++        return;
++      }
++
++      toast.success("Dispositivo validado com sucesso!", { id: toastId });
++      addToHistory(deviceMac);
++      setTimeout(() => onConnect(deviceMac), 500);
++    } catch (error) {
++      toast.error("Ocorreu um erro inesperado durante a validação.", { id: toastId });
+       setTestingConnection(false);
+-      return;
+     }
+-
+-    toast.success("Dispositivo validado!", {
+-      id: "mqtt-test",
+-    });
+-
+-    // Salva no histórico antes de conectar
+-    addToHistory(deviceMac);
+-
+-    setTimeout(() => onConnect(deviceMac), 500);
+   };
+ 
+   return (
+@@ -160,8 +161,6 @@ const Login = ({ onConnect }: LoginProps) => {
+ 
+       <Card className="max-w-md w-full relative z-10 bg-slate-50 shadow-2xl border-slate-200">
+         <CardHeader className="text-center space-y-4 pb-2">
+-
+-          {/* LOGO */}
+           <div className="flex justify-center py-2">
+             <img
+               src="/logo.png"
+@@ -235,7 +234,6 @@ const Login = ({ onConnect }: LoginProps) => {
+             )}
+           </Button>
+ 
+-          {/* Seção de Histórico */}
+           {recentDevices.length > 0 && (
+             <div className="pt-2 animate-in fade-in slide-in-from-bottom-2">
+               <div className="relative flex items-center py-2">
+@@ -250,7 +248,7 @@ const Login = ({ onConnect }: LoginProps) => {
+                 {recentDevices.map((mac) => (
+                   <div
+                     key={mac}
+-                    onClick={() => setDeviceMac(mac)}
++                    onClick={() => !testingConnection && setDeviceMac(mac)}
+                     className="group flex items-center justify-between p-3 rounded-md border border-slate-200 bg-white hover:border-slate-400 hover:shadow-sm cursor-pointer transition-all"
+                   >
+                     <div className="flex items-center gap-3">
+@@ -289,4 +287,4 @@ const Login = ({ onConnect }: LoginProps) => {
+   );
+ };
+ 
+-export default Login;
+\ No newline at end of file
++export default Login;

@@ -33,7 +33,7 @@ const Dashboard = ({ deviceMac, onSettings, onLogout }: DashboardProps) => {
               <Activity className="h-6 w-6 text-primary" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">Dashboard IoT</h1>
+              <h1 className="text-3xl font-bold">Painel de Controle</h1>
               <p className="text-sm text-muted-foreground">
                 Monitoramento em Tempo Real
               </p>
