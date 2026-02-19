@@ -79,9 +79,9 @@ npm install
 O arquivo `.env` já está configurado com as credenciais do HiveMQ:
 
 ```env
-VITE_MQTT_BROKER_URL=wss://72c037df4ced415995ef95169a5c7248.s1.eu.hivemq.cloud:8884/mqtt
-VITE_MQTT_USERNAME=esp32_cliente02
-VITE_MQTT_PASSWORD=Corcel@73
+MQTT_BROKER_URL=wss://72c037df4ced415995ef95169a5c7248.s1.eu.hivemq.cloud:8884/mqtt
+MQTT_USERNAME=esp32_cliente02
+MQTT_PASSWORD=Corcel@73
 ```
 
 ### 3. Executar em Desenvolvimento
